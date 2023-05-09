@@ -1,0 +1,83 @@
+#define irPin1  2 // Set the pin number for the first IR sensor
+#define irPin2  3 // Set the pin number for the second IR sensor
+#define irPin3  4 // Set the pin number for the third IR sensor
+#define buzzerPin 9
+#include <SoftwareSerial.h>
+SoftwareSerial mySerial(7, 8);
+int irValue1; // Declare the variable to store the value of the first IR sensor
+int irValue2; // Declare the variable to store the value of the second IR sensor
+int irValue3; // Declare the variable to store the value of the third IR sensor
+void setup() 
+{
+  pinMode(irPin1, INPUT);
+  pinMode(irPin2, INPUT);
+  pinMode(irPin3, INPUT);
+  pinMode(buzzerPin, OUTPUT);
+  Serial.begin(9600); // Initialize serial communication
+  mySerial.begin(9600);
+  delay(1000);
+}
+void loop() 
+{
+  irValue1 = digitalRead(irPin1); // Read the analog value from the first IR sensor
+  irValue2 = digitalRead(irPin2); // Read the analog value from the second IR sensor
+  irValue3 = digitalRead(irPin3); // Read the analog value from the third IR sensor
+  int detectedCount1 = 0;
+  int detectedCount2 = 0;
+  int detectedCount3 = 0; // Initialize the count of detected sensors to 0
+  digitalWrite(buzzerPin, LOW);
+  // Check each sensor value and increment the detected count if it is above a certain threshold
+  if (irValue1 == LOW) 
+{
+    detectedCount1=1;
+     Serial.println(irValue1);
+}
+if (irValue2 == LOW) 
+{
+    detectedCount2=1;
+     Serial.println(irValue2);
+  }
+  if (irValue3 == LOW) 
+{
+    detectedCount3=1;
+     Serial.println(irValue3);
+  }
+  // Determine the classification based on the number of detected sensors
+  if (detectedCount1==1&&detectedCount2==1&&detectedCount3==1 ) 
+ {
+    Serial.println("Adult"); // If 2 or more sensors detect something, classify as "child"
+  } 
+else if (detectedCount1==1&&detectedCount2==1&&detectedCount3!=1) 
+{
+    Serial.println("Child");
+    digitalWrite(buzzerPin, HIGH); // If only 1 sensor detects something, classify as "unknown"
+  } 
+  else if(detectedCount1==1&&detectedCount2!=1&&detectedCount3!=1) 
+ {
+    Serial.println("Unknown");
+    digitalWrite(buzzerPin, HIGH); // If no sensors detect anything, classify as "adult"
+  }
+  if (detectedCount1==1&&detectedCount2==1&&detectedCount3==1 ) 
+ {
+    Serial.println("Adult");
+    SendMessage("Adult");}
+    else if (detectedCount1==1&&detectedCount2==1&&detectedCount3!=1 ) 
+   {
+    Serial.println("child");
+    SendMessage("child is going out");}
+    else if (detectedCount1==1&&detectedCount2!=1&&detectedCount3!=1 ) {
+    Serial.println("Unknown");
+    SendMessage("Unknown");}
+  delay(700); // Wait for half a second before reading again
+}
+void SendMessage(String message)
+{
+  mySerial.println("AT+CMGF=1");
+  delay(1000);
+  mySerial.println("AT+CMGS=\"+919025311758\"\r");
+  delay(1000);
+  mySerial.println(message);
+  delay(100);
+  mySerial.println((char)26);
+  delay(1000);
+}
